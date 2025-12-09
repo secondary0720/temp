@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Happy Birthday — Surprise</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;width:100%}
+    body{
+      font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+      background: linear-gradient(135deg,#f6eadf,#e3c7a6,#c9a07b);
+      min-height:100vh;
+      min-height:100dvh;
+      overflow:hidden;
+      position:relative;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      touch-action: manipulation;
+    }
+
+    /* background image panel (hidden until reveal) */
+    #bgImage{
+      position:fixed;
+      inset:0;
+      z-index:0;
+      background-position:center center;
+      background-size:contain;
+      background-repeat:no-repeat;
+      opacity:0;
+      transition:opacity 900ms ease, transform 10s linear;
+      transform:scale(1.03);
+      pointer-events:none;
+    }
+    #bgImage.show{opacity:1;transform:scale(1)}
+    
+    /* Responsive background sizing */
+    @media(max-width:768px){
+      #bgImage{
+        background-size:cover;
+        background-position:center center;
+      }
+    }
+    @media(min-width:769px) and (orientation:landscape){
+      #bgImage{
+        background-size:contain;
+        background-position:center center;
+      }
+    }
+    @media(min-width:769px) and (orientation:portrait){
+      #bgImage{
+        background-size:cover;
+        background-position:center center;
+      }
+    }
+
+    .container{
+      position:relative;
+      z-index:3;
+      min-height:100vh;
+      min-height:100dvh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:18px;
+      padding:48px 18px;
+      text-align:center;
+    }
+
+    h1{
+      font-size:clamp(1.8rem, 5vw, 2.6rem);
+      color:#5a3e2b;
+      text-shadow:2px 3px 10px rgba(0,0,0,.12);
+      padding:0 10px;
+    }
+    .subtext{
+      color:#7d5538;
+      font-size:clamp(0.9rem, 3vw, 1.05rem);
+      opacity:.95;
+      padding:0 10px;
+    }
+
+    /* center heart - responsive sizing */
+    .heart{
+      width:clamp(100px, 20vw, 140px);
+      height:clamp(100px, 20vw, 140px);
+      display:block;
+      object-fit:contain;
+      transform-origin:center center;
+      will-change:transform,opacity;
+      z-index:10;
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%, -50%) scale(1);
+      animation:heartbeat 1.4s infinite;
+      transition: transform 2500ms cubic-bezier(0.4, 0, 0.2, 1), 
+                  opacity 2500ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes heartbeat{
+      0%{transform:translate(-50%, -50%) scale(1)}
+      50%{transform:translate(-50%, -50%) scale(1.08)}
+      100%{transform:translate(-50%, -50%) scale(1)}
+    }
+
+    /* zoom state — scale to fill entire screen while fading */
+    .heart.zoom { 
+      transform: translate(-50%, -50%) scale(40);
+      opacity: 0;
+      animation: none;
+    }
+
+    .message-box{
+      width:92%;
+      max-width:760px;
+      padding:clamp(16px, 4vw, 24px);
+      border-radius:14px;
+      background:rgba(255,255,255,0.85);
+      box-shadow:0 12px 30px rgba(0,0,0,.12);
+      transform:scale(.92);
+      opacity:0;
+      transition:transform .6s cubic-bezier(.2,.9,.2,1),opacity .6s ease;
+      color:#5a3e2b;
+      z-index:4;
+      position:relative;
+    }
+    .message-box.show{transform:scale(1);opacity:1}
+    .message-box p{
+      font-size:clamp(0.9rem, 3vw, 1.05rem);
+      line-height:1.6;
+    }
+
+    .btn{
+      background:#a57243;
+      color:#fff;
+      padding:clamp(10px, 3vw, 14px) clamp(20px, 5vw, 28px);
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:clamp(0.9rem, 3vw, 1rem);
+      box-shadow:0 8px 20px rgba(101,59,37,0.18);
+      z-index:4;
+      border:none;
+      transition:transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .btn:active{transform:translateY(2px)}
+    .btn:disabled{opacity:0.6;cursor:not-allowed}
+
+    /* floating hearts */
+    .floating-heart{
+      position:fixed;
+      top:100vh;
+      font-size:clamp(18px, 4vw, 22px);
+      pointer-events:none;
+      z-index:2;
+      color:#b3784c;
+      animation:floatUp linear infinite;
+    }
+    @keyframes floatUp{
+      from{transform:translateY(0);opacity:1}
+      to{transform:translateY(-120vh);opacity:0}
+    }
+
+    /* sparkle */
+    .star{
+      position:absolute;
+      width:clamp(6px, 1.5vw, 8px);
+      height:clamp(6px, 1.5vw, 8px);
+      border-radius:50%;
+      background:#d4af37;
+      opacity:.95;
+      filter:blur(.6px);
+      z-index:4;
+      animation:tw 2.6s infinite;
+    }
+    @keyframes tw{
+      0%{transform:scale(1)}
+      50%{transform:scale(1.7);opacity:.3}
+      100%{transform:scale(1);opacity:.95}
+    }
+
+    /* Mobile landscape fix */
+    @media(max-height:500px) and (orientation:landscape){
+      .container{
+        padding:20px 18px;
+        gap:12px;
+      }
+      h1{font-size:1.4rem}
+      .subtext{font-size:0.85rem}
+      .heart{width:80px;height:80px}
+      .btn{padding:8px 16px;font-size:0.85rem}
+    }
+
+    /* Tablet and larger */
+    @media(min-width:768px){
+      .message-box{
+        background:rgba(255,255,255,0.82);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- background image element (shown after heart zoom/fade) -->
+  <div id="bgImage" aria-hidden="true"></div>
+
+  <div class="container" role="main">
+    <h1>Happy Birthday My Love ⸜(｡˃ ᵕ ˂ )⸝♡</h1>
+    <p class="subtext">You make my world brighter than any sunshine.</p>
+
+    <!-- center heart (replace src if you want) -->
+    <img id="centerHeart" class="heart" src="https://cdn-icons-png.flaticon.com/512/833/833472.png" alt="heart">
+
+    <div id="msgBox" class="message-box" aria-hidden="true">
+      <p>
+        Every moment with you is a gift. On this special day, I just want to say how grateful I am to have you in my life. 💕<br/><br/>
+        You deserve all the love, happiness, and warmth in this world.
+      </p>
+    </div>
+
+    <button id="revealBtn" class="btn" role="button" tabindex="0" aria-pressed="false">Tap to Reveal Message 💛</button>
+  </div>
+
+  <audio id="music" loop>
+    <!-- optional: put a valid mp3 URL here -->
+    <source src="" type="audio/mpeg" />
+  </audio>
+
+  <script>
+    (function(){
+      // ---------- config ----------
+      const BG_IMAGE_URL = 'file_00000000fb6851f7b3bae3ec303bdefe_conversation_id=67e866fe-e298-8010-8946-1c9d75bf6d28&message_id=7a237aa8-02ff-4f57-85f4-70fe895ea78d.webp.png'; // <-- replace with your image path or URL (keep quotes)
+
+      // ---------- refs ----------
+      const btn = document.getElementById('revealBtn');
+      const heart = document.getElementById('centerHeart');
+      const msg = document.getElementById('msgBox');
+      const bg = document.getElementById('bgImage');
+      const music = document.getElementById('music');
+
+      // set the background image (hidden initially)
+      bg.style.backgroundImage = `url('${BG_IMAGE_URL}')`;
+
+      // detect if mobile/touch device
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || 
+                       ('ontouchstart' in window);
+
+      // adjust zoom scale based on screen size for better coverage
+      function getZoomScale(){
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const maxDimension = Math.max(vw, vh);
+        // Calculate scale needed to cover screen + buffer
+        return Math.ceil(maxDimension / 140 * 1.5);
+      }
+
+      // continuously spawn floating hearts
+      function createFloatingHeart(){
+        const el = document.createElement('div');
+        el.className = 'floating-heart';
+        el.textContent = '🤎';
+        el.style.left = (Math.random()*(window.innerWidth-40)) + 'px';
+        const dur = 3 + Math.random()*4;
+        el.style.animationDuration = dur + 's';
+        el.style.fontSize = (14 + Math.random()*(isMobile ? 16 : 22)) + 'px';
+        document.body.appendChild(el);
+        setTimeout(()=> el.remove(), (dur*1000) + 500);
+      }
+      const floatInterval = setInterval(createFloatingHeart, 600);
+
+      // spawn sparkles near center
+      function spawnStars(count){
+        const cx = window.innerWidth/2;
+        const cy = window.innerHeight/2;
+        const spreadX = isMobile ? 280 : 360;
+        const spreadY = isMobile ? 180 : 220;
+        for(let i=0;i<count;i++){
+          const s = document.createElement('div');
+          s.className = 'star';
+          s.style.left = (cx + (Math.random()*spreadX - spreadX/2)) + 'px';
+          s.style.top  = (cy + (Math.random()*spreadY - spreadY/2)) + 'px';
+          s.style.animationDelay = (Math.random()*0.8) + 's';
+          document.body.appendChild(s);
+          setTimeout(()=> s.remove(), 2800 + Math.random()*1200);
+        }
+      }
+
+      // core reveal sequence
+      function revealSequence(){
+        // prevent double activation
+        if(btn.dataset.clicked === 'true') return;
+        btn.dataset.clicked = 'true';
+        btn.setAttribute('aria-pressed','true');
+        btn.disabled = true;
+
+        // optional: play music if provided
+        try { 
+          if(music.querySelector('source') && music.querySelector('source').src){
+            music.play().catch(e => console.log('Audio autoplay prevented'));
+          }
+        } catch(e){}
+
+        // set dynamic zoom scale
+        const zoomScale = getZoomScale();
+        heart.style.setProperty('--zoom-scale', zoomScale);
+
+        // ensure layout / reflow then start zoom
+        void heart.offsetWidth; // force reflow
+
+        // 1) zoom AND fade simultaneously - heart grows larger while fading out
+        heart.classList.add('zoom');
+
+        // after zoom+fade completes (~2500ms), show background and message
+        const ZOOM_FADE_MS = 2500;
+        setTimeout(() => {
+          heart.style.display = 'none';
+
+          // reveal background (fade and slow zoom - CSS handles)
+          bg.classList.add('show');
+
+          // reveal message box
+          setTimeout(() => {
+            msg.classList.add('show');
+            msg.setAttribute('aria-hidden','false');
+          }, 200);
+
+          // sparkles
+          spawnStars(isMobile ? 6 : 8);
+
+          // stop creating floating hearts after a short delay
+          setTimeout(()=> clearInterval(floatInterval), 4800);
+
+        }, ZOOM_FADE_MS);
+      }
+
+      // event listeners (click + touch)
+      btn.addEventListener('click', revealSequence);
+      btn.addEventListener('touchstart', function(e){
+        e.preventDefault();
+        revealSequence();
+      }, {passive: false});
+      btn.addEventListener('keydown', function(e){
+        if(e.key === 'Enter' || e.key === ' ') { 
+          e.preventDefault(); 
+          revealSequence(); 
+        }
+      });
+
+      // prevent zoom on double-tap for mobile
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function(e){
+        const now = Date.now();
+        if(now - lastTouchEnd <= 300){
+          e.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+    })();
+  </script>
+</body>
+</html>
